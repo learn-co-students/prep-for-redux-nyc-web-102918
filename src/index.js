@@ -3,56 +3,73 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import logo from './logo.svg';
 import './App.css';
+import { createStore } from 'redux'
+
+const reducer = (prevState, action) => {
+	switch (action.type) {
+		case 'INCREMENT':
+			return prevState + 1
+		case 'DECREMENT':
+			return prevState - 1
+		default:
+			return 0
+	}
+}
+
+const store = createStore(reducer)
 
 class App extends Component {
   render() {
     return (
       <div className="App">
         <Header />
-        <Counter />
+        <Counter renderDOM={this.props.renderDOM}/>
       </div>
     );
   }
 }
 
 class Header extends Component {
+	renderDescription = () => {
+		const remainder = store.getState() % 5;
+		const upToNext = 5 - remainder;
+		return `The current count is less than ${store.getState() + upToNext}`;
+	};
+	
   render() {
     return (
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
-        <h1 className="App-title">Welcome to React</h1>
+        <h1 className="App-title">{this.renderDescription()}</h1>
       </header>
     );
   }
 }
 
 class Counter extends Component {
-  state = { count: 0 };
+
+
 
   increment = () => {
-    this.setState(prevState => ({ count: prevState.count + 1 }));
+    store.dispatch({type: 'INCREMENT'})
+		this.props.renderDOM()
   };
 
   decrement = () => {
-    this.setState(prevState => ({ count: prevState.count - 1 }));
-  };
-
-  renderDescription = () => {
-    const remainder = this.state.count % 5;
-    const upToNext = 5 - remainder;
-    return `The current count is less than ${this.state.count + upToNext}`;
+    store.dispatch({type: 'DECREMENT'})
+		this.props.renderDOM()
   };
 
   render() {
     return (
       <div className="Counter">
-        <h1>{this.state.count}</h1>
+        <h1>{store.getState()}</h1>
         <button onClick={this.decrement}> - </button>
         <button onClick={this.increment}> + </button>
-        <h3>{this.renderDescription()}</h3>
       </div>
     );
   }
 }
 
-ReactDOM.render(<App />, document.getElementById('root'));
+const renderDOM = () => ReactDOM.render(<App renderDOM={renderDOM}/>, document.getElementById('root'));
+renderDOM()
